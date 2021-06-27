@@ -2,6 +2,11 @@ clear
 clc 
 load('MOS50.mat');
 load('MOS100.mat');
+dirMetrics = dir('Metrics'); %Folder where metrics are placed
+%%%Experimental parameters%%% 
+viewingDistance = 50; %Viewing distance in CM
+dpi = 90; %DPI of monitor
+
 Names=strings([1,690]); %creat string
 InfoImages=dir('Images\Reproduction\1_JPEG2000_Compression');
 for i=1:115 
@@ -44,14 +49,8 @@ Original=dir('C:\Users\anous\Documents\Internship\CIDIQ\Images\Original\');
 Original=Original(3:25,1);
 Fields={'folder','date','bytes','isdir','datenum'};
 Original = rmfield(Original, Fields); %Original Done
-%solution 1
+
 ImgAdr=strcat('C:\Users\anous\Documents\Internship\CIDIQ\Images\Original\',InfoImages(3,1).name(1:7),'.bmp');
-%img=imread(ImAdr); %read image
-%ImAdr=strcat('C:\Users\anous\Documents\Internship\CIDIQ\Images\Reproduction\6_DeltaE_Gamut_Mapping\',InfoImages(3).name);
-%test=imread(ImAdr);
-%Q=psnr(img,test);
-%solution 2 
-%reference image in Original and test image in Names !
 Resu.OriginalName=Names;
 Resu.MOS50=MOS50;
 Resu.MOS100=MOS100;
@@ -65,20 +64,36 @@ ImgAdr=strcat('C:\Users\anous\Documents\Internship\CIDIQ\Images\Original\',Resu.
 ReferenceImg=imread(ImgAdr); %read Reference image
 addpath(genpath('C:\Users\anous\Documents\Internship\CIDIQ\Images\Reproduction\'));
 TestImg=imread(Resu.Names(i)); %read test image
+%%
 
-Q3(i)=psnr(ReferenceImg,TestImg); %auto this by getting the name from user
-Q4(i)=ssim(ReferenceImg,TestImg);
-end
-REQ='Metric to use:1-Pnsr , 2-Ssim  ';
-x = input(REQ);
-if x==1
-    Resu.Psnr=Q3';
-elseif x==2
-    Resu.Ssim=Q4';
-else 
-    disp('Pls choose from choices below');
+
+for j=4:size(dirMetrics,1)
+ %looping through all metrics 
+ %   f = waitbar(i./690);['Please wait... calculating quality score for  image', i ];%waitbar; %waitbar
+
+    addpath(genpath(['Metrics\',dirMetrics(j).name])); % Restore original folder, required to some metrics to run
+    Results.(dirMetrics(j).name) = Run(ReferenceImg,TestImg,viewingDistance,dpi); %Call function to calculate metric
+    rmpath(genpath(['Metrics\',dirMetrics(j).name])); % Remove path of first functionName from search path.
 end
 
+
+%%
+%Q3(i)=psnr(ReferenceImg,TestImg); %auto this by getting the name from user
+%Q4(i)=ssim(ReferenceImg,TestImg);
+end
+%REQ='Metric to use:1-Pnsr , 2-Ssim  ';
+%x = input(REQ);
+%if x==1
+   % Resu.Psnr=Q3';
+%elseif x==2
+   % Resu.Ssim=Q4';
+%else 
+    %disp('Pls choose from choices below');
+%end
+%Resu.Fsiq=rand(690,1);
+%Resu.Metric4=rand(690,1);
+%Resu.Metric5=rand(690,1);
+%Resu.Metric6=rand(690,1);
 
 
 
